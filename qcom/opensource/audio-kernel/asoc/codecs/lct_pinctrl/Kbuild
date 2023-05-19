@@ -6,8 +6,6 @@ else
 	KERNEL_BUILD := 0
 endif
 
-
-
 ifeq ($(KERNEL_BUILD), 1)
 	# These are configurable via Kconfig for kernel-based builds
 	# Need to explicitly configure for Android-based builds
@@ -16,10 +14,26 @@ ifeq ($(KERNEL_BUILD), 1)
 endif
 
 ifeq ($(KERNEL_BUILD), 0)
+	ifeq ($(CONFIG_ARCH_SM6150), y)
+		include $(AUDIO_ROOT)/config/sm6150auto.conf
+		export
+		INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
+	endif
+	ifeq ($(CONFIG_ARCH_TRINKET), y)
+		include $(AUDIO_ROOT)/config/sm6150auto.conf
+		export
+		INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
+	endif
 	ifeq ($(CONFIG_ARCH_KHAJE), y)
 		include $(AUDIO_ROOT)/config/bengalauto.conf
 		export
 		INCS    +=  -include $(AUDIO_ROOT)/config/bengalautoconf.h
+	endif
+	ifeq ($(CONFIG_ARCH_LITO), y)
+		include $(AUDIO_ROOT)/config/litoauto.conf
+		export
+		INCS    +=  -include $(AUDIO_ROOT)/config/litoautoconf.h
+	endif
 endif
 
 # As per target team, build is done as follows:
@@ -46,22 +60,12 @@ UAPI_INC :=	-I$(AUDIO_ROOT)/include/$(UAPI_DIR)
 COMMON_DIR :=	include
 COMMON_INC :=	-I$(AUDIO_ROOT)/$(COMMON_DIR)
 
-############ ROULEUR ############
+############ LCT_PINCTRL ############
 
-# for ROULEUR Codec
-ifdef CONFIG_SND_SOC_ROULEUR
-	ROULEUR_OBJS += rouleur.o
-	ROULEUR_OBJS += rouleur-regmap.o
-	ROULEUR_OBJS += rouleur-tables.o
-	ROULEUR_OBJS += rouleur-mbhc.o
-endif
-
-ifdef CONFIG_PM2250_SPMI
-	PM2250_SPMI_OBJS += pm2250_spmi.o
-endif
-
-ifdef CONFIG_SND_SOC_ROULEUR_SLAVE
-	ROULEUR_SLAVE_OBJS += rouleur_slave.o
+# for LCT_PINCTRL Codec
+ifdef CONFIG_SND_SOC_LCT_PINCTRL
+	EXTRA_CFLAGS += -DCONFIG_SND_SOC_LCT_PINCTRL
+	LCT_PINCTRL_OBJS := lct_pinctrl.o
 endif
 
 LINUX_INC +=	-Iinclude/linux
@@ -98,19 +102,17 @@ EXTRA_CFLAGS += -Wheader-guard
 endif
 
 ifeq ($(KERNEL_BUILD), 0)
-KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/sm6225-modules/qcom/opensource/audio-kernel/ipc/Module.symvers
-KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/sm6225-modules/qcom/opensource/audio-kernel/dsp/Module.symvers
-KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/sm6225-modules/qcom/opensource/audio-kernel/asoc/Module.symvers
-KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/sm6225-modules/qcom/opensource/audio-kernel/asoc/codecs/Module.symvers
-KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/sm6225-modules/qcom/opensource/audio-kernel/soc/Module.symvers
+KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/ipc/Module.symvers
+KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/dsp/Module.symvers
+KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/asoc/Module.symvers
+KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/asoc/codecs/Module.symvers
+KBUILD_EXTRA_SYMBOLS +=$(OUT)/obj/vendor/qcom/opensource/audio-kernel/soc/Module.symvers
 endif
 
 # Module information used by KBuild framework
-obj-$(CONFIG_SND_SOC_ROULEUR) += rouleur_dlkm.o
-rouleur_dlkm-y := $(ROULEUR_OBJS)
+obj-$(CONFIG_SND_SOC_LCT_PINCTRL) += lct_pinctrl_dlkm.o
+lct_pinctrl_dlkm-y := $(LCT_PINCTRL_OBJS)
 
-obj-$(CONFIG_SND_SOC_ROULEUR_SLAVE) += rouleur_slave_dlkm.o
-rouleur_slave_dlkm-y := $(ROULEUR_SLAVE_OBJS)
 
-obj-$(CONFIG_PM2250_SPMI) += pm2250_spmi_dlkm.o
-pm2250_spmi_dlkm-y := $(PM2250_SPMI_OBJS)
+# inject some build related information
+DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
