@@ -49,6 +49,7 @@
 #include "cam_tfe_dev.h"
 #include "cam_tfe_csid530.h"
 #include "cam_top_tpg_v1.h"
+#include "wl2866d.h"
 
 struct camera_submodule_component {
 	int (*init)(void);
@@ -90,6 +91,7 @@ static const struct camera_submodule_component camera_sensor[] = {
 	{&cam_res_mgr_init, &cam_res_mgr_exit},
 	{&cam_cci_init_module, &cam_cci_exit_module},
 	{&cam_csiphy_init_module, &cam_csiphy_exit_module},
+	{&cam_wl2866_init_module, &cam_wl2866_exit_module},
 	{&cam_actuator_driver_init, &cam_actuator_driver_exit},
 	{&cam_sensor_driver_init, &cam_sensor_driver_exit},
 	{&cam_eeprom_driver_init, &cam_eeprom_driver_exit},
