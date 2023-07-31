@@ -21,7 +21,7 @@
 #define WL2866D_IO_BUFFER_LIMIT 128
 #define WL2866D_MISC_MAJOR 250
 
-#define CONTROL_GPIO54_ENABLE 0
+#define CONTROL_GPIO54_ENABLE 1
 
 #define WL2866D_PWR_NUMBER 4
 static const char* wl2866d_pwr_name[WL2866D_PWR_NUMBER]={
@@ -136,7 +136,7 @@ static int wl2866d_read_reg(u8 reg, u8 *val)
 }
 
 #if CONTROL_GPIO54_ENABLE
-static void enable_i2c_pullup()
+static void enable_i2c_pullup(void)
 {
     int ret = 0;
     printk("try control gpio 54\n");

@@ -9,6 +9,15 @@
 #include "cam_flash_core.h"
 #include "cam_common_util.h"
 
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+struct gpio_flash_led mgpio_flash_led = {
+        .flash_en = 0,
+        .flash_now = 0,
+};
+#endif
+/* Spes flashlight by muralivijay@github */
+
 static int32_t cam_flash_driver_cmd(struct cam_flash_ctrl *fctrl,
 		void *arg, struct cam_flash_private_soc *soc_private)
 {
@@ -415,6 +424,10 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 	struct cam_flash_ctrl *fctrl     = NULL;
 	struct device_node *of_parent    = NULL;
 	struct cam_hw_soc_info *soc_info = NULL;
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+        struct device_node *gnode = pdev->dev.of_node; //store qcom-flash-gpios
+#endif
 
 	CAM_DBG(CAM_FLASH, "Enter");
 	if (!pdev->dev.of_node) {
@@ -517,6 +530,28 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 		fctrl->func_tbl.power_ops = NULL;
 		fctrl->func_tbl.flush_req = cam_flash_pmic_flush_request;
 	}
+
+/* Spes flashlight by muralivijay@github */
+#ifdef CONFIG_CAMERA_FLASH_SPES
+                // Get flash_en GPIO
+                /*Xiaomi added tlmm 85 pin in dts used as flash mode in camera */
+                mgpio_flash_led.flash_en = of_get_named_gpio(gnode, "qcom,flash-gpios", 0);
+                if (!gpio_is_valid(mgpio_flash_led.flash_en)) {
+                // Handle error if GPIO is not valid
+                CAM_ERR(CAM_FLASH, "Invalid GPIO for flash_en");
+               }
+                CAM_INFO(CAM_FLASH, "flash_en GPIO: %d", mgpio_flash_led.flash_en);
+
+                // Get flash_now GPIO
+                /*Xiaomi added pm6125_gpios 2 pin in dts  mainly used as torch mode */
+                mgpio_flash_led.flash_now = of_get_named_gpio(gnode, "qcom,flash-gpios", 1);
+                if (!gpio_is_valid(mgpio_flash_led.flash_now)) {
+                // Handle error if GPIO is not valid
+                CAM_ERR(CAM_FLASH, "Invalid GPIO for flash_en");
+               }
+                CAM_INFO(CAM_FLASH, "flash_now GPIO: %d", mgpio_flash_led.flash_now);
+#endif
+/* Spes flashlight by muralivijay@github */
 
 	rc = cam_flash_init_subdev(fctrl);
 	if (rc) {
