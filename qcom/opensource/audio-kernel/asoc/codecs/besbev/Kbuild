@@ -113,6 +113,3 @@ besbev-slave_dlkm-y := $(BESBEV_SLAVE_OBJS)
 
 obj-$(CONFIG_PMW5100_SPMI) += pmw5100-spmi_dlkm.o
 pmw5100-spmi_dlkm-y := $(PMW5100_SPMI_OBJS)
-
-# inject some build related information
-DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
