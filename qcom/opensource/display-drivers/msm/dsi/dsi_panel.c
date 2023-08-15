@@ -39,6 +39,9 @@
 #define RSCC_MODE_THRESHOLD_TIME_US 40
 #define DCS_COMMAND_THRESHOLD_TIME_US 40
 
+// ESD recovery
+extern void lcd_esd_enable(bool on);
+
 static void dsi_dce_prepare_pps_header(char *buf, u32 pps_delay_ms)
 {
 	char *bp;
@@ -3495,6 +3498,28 @@ static int dsi_panel_parse_esd_config(struct dsi_panel *panel)
 
 	esd_config = &panel->esd_config;
 	esd_config->status_mode = ESD_MODE_MAX;
+
+	/* esd-err-flag method will be prefered */
+	esd_config->esd_err_irq_gpio = of_get_named_gpio(panel->panel_of_node,
+		 			"qcom,esd-err-irq-gpio", 0);
+	esd_config->esd_err_irq_flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
+
+	if (gpio_is_valid(esd_config->esd_err_irq_gpio)) {
+		DSI_DEBUG("esd irq gpio is valid\n");
+		esd_config->esd_err_irq = gpio_to_irq(esd_config->esd_err_irq_gpio);
+		rc = gpio_request(esd_config->esd_err_irq_gpio, "esd_err_int_gpio");
+		if (rc)
+			DSI_ERR("%s: Failed to get esd irq GPIO%d (rc = %d)",
+					__func__, esd_config->esd_err_irq_gpio, rc);
+		else {
+			DSI_INFO("%s: Succeed to get esd irq GPIO%d (rc = %d)",
+					__func__, esd_config->esd_err_irq_gpio, rc);
+			gpio_direction_input(esd_config->esd_err_irq_gpio);
+		}
+
+		return 0;
+	}
+
 	esd_config->esd_enabled = utils->read_bool(utils->data,
 		"qcom,esd-check-enabled");
 
