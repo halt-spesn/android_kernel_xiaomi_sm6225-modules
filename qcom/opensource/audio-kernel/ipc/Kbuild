@@ -12,7 +12,7 @@ KDIR := $(TOP)/kernel/msm-5.4
 
 ifeq ($(KERNEL_BUILD), 1)
 	ifeq ($(TARGET_SUPPORT), sa525m)
-		AUDIO_ROOT := $(shell pwd)/../../../../vendor/qcom/opensource/audio-kernel
+		AUDIO_ROOT := $(shell pwd)/../../../../sm6225-modules/qcom/opensource/audio-kernel
 	else
 		AUDIO_ROOT := $(KDIR)/techpack/audio
 	endif

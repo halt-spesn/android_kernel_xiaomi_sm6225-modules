@@ -17,7 +17,7 @@ ifeq ($(TOUCH_DLKM_ENABLE),  true)
 	ifneq ($(findstring vendor,$(LOCAL_PATH)),)
 
 	ifneq ($(findstring opensource,$(LOCAL_PATH)),)
-		TOUCH_BLD_DIR := $(shell pwd)/vendor/qcom/opensource/touch-drivers
+		TOUCH_BLD_DIR := $(shell pwd)/sm6225-modules/qcom/opensource/touch-drivers
 	endif # opensource
 
 	DLKM_DIR := $(TOP)/device/qcom/common/dlkm

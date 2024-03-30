@@ -20,10 +20,10 @@ endif
 
 ifeq ($(ENABLE_AUDIO_LEGACY_TECHPACK),true)
 include $(call all-subdir-makefiles)
-LOCAL_PATH    := vendor/qcom/opensource/audio-kernel
+LOCAL_PATH    := sm6225-modules/qcom/opensource/audio-kernel
 endif
 
-BOARD_OPENSOURCE_DIR ?= vendor/qcom/opensource
+BOARD_OPENSOURCE_DIR ?= sm6225-modules/qcom/opensource
 BOARD_COMMON_DIR ?= device/qcom/common
 
 # Build/Package only in case of supported target

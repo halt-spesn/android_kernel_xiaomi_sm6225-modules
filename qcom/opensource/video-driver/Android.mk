@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-only
-BOARD_OPENSOURCE_DIR ?= vendor/qcom/opensource
+BOARD_OPENSOURCE_DIR ?= sm6225-modules/qcom/opensource
 VIDEO_BLD_DIR := $(shell pwd)/$(BOARD_OPENSOURCE_DIR)/video-driver
 VIDEO_SELECT := CONFIG_MSM_VIDC_V4L2=m
 

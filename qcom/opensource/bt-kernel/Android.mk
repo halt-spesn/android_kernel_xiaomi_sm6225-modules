@@ -22,7 +22,7 @@ LOCAL_PATH := $(call my-dir)
 ifneq ($(findstring vendor,$(LOCAL_PATH)),)
 
 ifneq ($(findstring opensource,$(LOCAL_PATH)),)
-	BT_BLD_DIR := $(abspath .)/vendor/qcom/opensource/bt-kernel
+	BT_BLD_DIR := $(abspath .)/sm6225-modules/qcom/opensource/bt-kernel
 endif # opensource
 
 DLKM_DIR := $(TOP)/device/qcom/common/dlkm
