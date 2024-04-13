@@ -13,7 +13,7 @@ M ?= $(shell pwd)
 
 ifeq ($(WLAN_ROOT),)
 KBUILD_OPTIONS += \
-    WLAN_ROOT=$(KERNEL_SRC)/$(M)/ \
+    WLAN_ROOT=$(KERNEL_SRC)/$(M) \
     WLAN_PLATFORM_ROOT=$(KERNEL_SRC)/$(M)/../platform \
     WLAN_COMMON_ROOT=cmn \
     WLAN_COMMON_INC=$(KERNEL_SRC)/$(M)/cmn \
@@ -29,7 +29,7 @@ KBUILD_OPTIONS += \
     CONFIG_CNSS_UTILS=m \
     DYNAMIC_SINGLE_CHIP= \
     MODNAME=wlan \
-    BOARD_PLATFORM=bengal \
+    BOARD_PLATFORM=bengal
 endif
 
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(OUT_DIR)/../sm6225-modules/qcom/opensource/wlan/platform/Module.symvers
