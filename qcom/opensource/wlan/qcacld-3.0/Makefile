@@ -32,7 +32,7 @@ KBUILD_OPTIONS += \
     BOARD_PLATFORM=bengal
 endif
 
-KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(OUT_DIR)/../sm6225-modules/qcom/opensource/wlan/platform/Module.symvers
+KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(ANDROID_BUILD_TOP)/out/sm6225-modules/qcom/opensource/wlan/platform/Module.symvers
 
 all:
 	$(MAKE) -C $(KERNEL_SRC) M=$(M) modules $(KBUILD_OPTIONS)
