@@ -12,8 +12,13 @@ ifeq ($(CONFIG_ARCH_KALAMA), y)
 endif
 
 ifeq ($(CONFIG_ARCH_KHAJE), y)
+  ifdef CONFIG_TARGET_PROJECT_K7T
+        include $(TOUCH_ROOT)/config/gki_spestouch.conf
+        LINUX_INC += -include $(TOUCH_ROOT)/config/gki_spestouchconf.h
+  else
 	include $(TOUCH_ROOT)/config/gki_khajetouch.conf
 	LINUX_INC += -include $(TOUCH_ROOT)/config/gki_khajetouchconf.h
+  endif
 endif
 
 ifeq ($(CONFIG_ARCH_PINEAPPLE), y)
