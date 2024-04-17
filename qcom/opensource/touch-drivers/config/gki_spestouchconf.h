@@ -3,4 +3,4 @@
  * Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
  */
 
-#define CONFIG_TOUCH_FOCALTECH 1
+#define CONFIG_TOUCHSCREEN_FTS 1
