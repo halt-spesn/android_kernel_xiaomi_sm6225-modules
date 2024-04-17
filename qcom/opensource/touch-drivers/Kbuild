@@ -92,6 +92,26 @@ ifeq ($(CONFIG_TOUCH_FOCALTECH), y)
 	obj-$(CONFIG_MSM_TOUCH) += focaltech_fts.o
 endif
 
+ifeq ($(CONFIG_TOUCHSCREEN_FTS), y)
+        LINUX_INC += -include $(TOUCH_ROOT)/ft3418_i2c/focaltech_common.h
+        LINUX_INC += -include $(TOUCH_ROOT)/ft3418_i2c/focaltech_config.h
+        LINUX_INC += -include $(TOUCH_ROOT)/ft3418_i2c/focaltech_core.h
+        LINUX_INC += -include $(TOUCH_ROOT)/ft3418_i2c/focaltech_flash.h
+
+        focaltech_fts_i2c-y := \
+                 ./ft3418_i2c/focaltech_core.o \
+                 ./ft3418_i2c/focaltech_ex_fun.o \
+                 ./ft3418_i2c/focaltech_ex_mode.o \
+                 ./ft3418_i2c/focaltech_gesture.o \
+                 ./ft3418_i2c/focaltech_esdcheck.o \
+                 ./ft3418_i2c/focaltech_point_report_check.o \
+                 ./ft3418_i2c/focaltech_i2c.o \
+                 ./ft3418_i2c/focaltech_flash.o \
+                 ./ft3418_i2c/focaltech_flash/focaltech_upgrade_ft3418.o
+
+        obj-$(CONFIG_MSM_TOUCH) += focaltech_fts_i2c.o
+endif
+
 ifeq ($(CONFIG_TOUCHSCREEN_NT36XXX_I2C), y)
 	LINUX_INC += -include $(TOUCH_ROOT)/nt36xxx/nt36xxx.h
 	LINUX_INC += -include $(TOUCH_ROOT)/nt36xxx/nt36xxx_mem_map.h
