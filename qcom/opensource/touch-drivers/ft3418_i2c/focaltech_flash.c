@@ -1138,7 +1138,9 @@ static int fts_read_file(char *file_name, u8 **file_buf)
     char file_path[FILE_NAME_LENGTH] = { 0 };
     struct file *filp = NULL;
     struct inode *inode;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
     mm_segment_t old_fs;
+#endif
     loff_t pos;
     loff_t file_len = 0;
 
@@ -1148,7 +1150,11 @@ static int fts_read_file(char *file_name, u8 **file_buf)
     }
 
     snprintf(file_path, FILE_NAME_LENGTH, "%s%s", FTS_FW_BIN_FILEPATH, file_name);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
     filp = filp_open(file_path, O_RDONLY, 0);
+#else
+    filp = filp_open_block(file_path, O_RDONLY, 0);
+#endif
     if (IS_ERR(filp)) {
         FTS_ERROR("open %s file fail", file_path);
         return -ENOENT;
@@ -1168,15 +1174,23 @@ static int fts_read_file(char *file_name, u8 **file_buf)
         filp_close(filp, NULL);
         return -ENOMEM;
     }
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
     old_fs = get_fs();
     set_fs(KERNEL_DS);
+#endif
     pos = 0;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
     ret = vfs_read(filp, *file_buf, file_len , &pos);
+#else
+    ret = filp->f_op->read(filp, *file_buf, file_len , &pos);
+#endif
     if (ret < 0)
         FTS_ERROR("read file fail");
     FTS_INFO("file len:%d read len:%d pos:%d", (u32)file_len, ret, (u32)pos);
     filp_close(filp, NULL);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 4, 0))
     set_fs(old_fs);
+#endif
 
     return ret;
 }
