@@ -315,3 +315,4 @@ static void __exit xiaomi_touch_exit(void)
 
 subsys_initcall(xiaomi_touch_init);
 module_exit(xiaomi_touch_exit);
+MODULE_LICENSE("GPL");
