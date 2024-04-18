@@ -128,6 +128,7 @@ struct class *get_xiaomi_touch_class(void)
 {
 	return xiaomi_touch_dev.class;
 }
+EXPORT_SYMBOL(get_xiaomi_touch_class);
 
 int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 {
@@ -153,6 +154,7 @@ int xiaomitouch_register_modedata(struct xiaomi_touch_interface *data)
 	mutex_unlock(&xiaomi_touch_dev.mutex);
 	return ret;
 }
+EXPORT_SYMBOL(xiaomitouch_register_modedata);
 
 int update_palm_sensor_value(int value)
 {
