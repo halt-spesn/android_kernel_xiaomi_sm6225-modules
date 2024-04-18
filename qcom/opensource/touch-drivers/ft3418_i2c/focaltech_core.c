@@ -2204,12 +2204,14 @@ static int __init fts_ts_init(void)
 
     FTS_FUNC_ENTER();
 
+#if 0
     //Check android mode
     if (strnstr(saved_command_line, "androidboot.mode=charger", 2048) != NULL) {
 	FTS_ERROR("androidboot.mode=charger, doesn't support touch in the charging mode!");
 	FTS_FUNC_EXIT();
 	return -ENODEV;
 	}
+#endif
 
     ret = i2c_add_driver(&fts_ts_driver);
     if ( ret != 0 ) {
