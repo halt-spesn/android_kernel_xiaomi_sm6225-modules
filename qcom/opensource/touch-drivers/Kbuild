@@ -112,6 +112,16 @@ ifeq ($(CONFIG_TOUCHSCREEN_FTS), y)
         obj-$(CONFIG_MSM_TOUCH) += focaltech_fts_i2c.o
 endif
 
+ifeq ($(CONFIG_TOUCHSCREEN_XIAOMI_TOUCHFEATURE), y)
+        LINUX_INC += -include $(TOUCH_ROOT)/xiaomi/xiaomi_touch.h
+
+        xiaomi_touch-y := \
+                 ./xiaomi/xiaomi_touch.o
+
+        obj-$(CONFIG_MSM_TOUCH) += xiaomi_touch.o
+endif
+
+
 ifeq ($(CONFIG_TOUCHSCREEN_NT36XXX_I2C), y)
 	LINUX_INC += -include $(TOUCH_ROOT)/nt36xxx/nt36xxx.h
 	LINUX_INC += -include $(TOUCH_ROOT)/nt36xxx/nt36xxx_mem_map.h
