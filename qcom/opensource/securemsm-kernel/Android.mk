@@ -21,7 +21,7 @@ ifeq ($(ENABLE_SECUREMSM_DLKM), true)
 LOCAL_PATH := $(call my-dir)
 DLKM_DIR := $(TOP)/device/qcom/common/dlkm
 
-SEC_KERNEL_DIR := $(TOP)/vendor/qcom/opensource/securemsm-kernel
+SEC_KERNEL_DIR := $(TOP)/sm6225-modules/qcom/opensource/securemsm-kernel
 
 SSG_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/*) \
