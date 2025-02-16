@@ -72,8 +72,7 @@ AUDIO_KERNEL_MODULES += $(KERNEL_MODULES_OUT)/q6_notifier_dlkm.ko\
 	$(KERNEL_MODULES_OUT)/rx_macro_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wsa881x_analog_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/wcd937x_dlkm.ko \
-	$(KERNEL_MODULES_OUT)/wcd937x_slave_dlkm.ko \
-	$(KERNEL_MODULES_OUT)/aw87xxx_dlkm.ko
+	$(KERNEL_MODULES_OUT)/wcd937x_slave_dlkm.ko
 endif	# bengal
 
 ifeq ($(call is-board-platform-in-list,monaco), true)
