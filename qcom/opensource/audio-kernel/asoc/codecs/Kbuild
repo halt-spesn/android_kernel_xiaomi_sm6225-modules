@@ -216,6 +216,12 @@ ifdef CONFIG_SND_SOC_SWR_DMIC
        SWR_DMIC_OBJS += swr-dmic.o
 endif
 
+# for LCT_PINCTRL Codec
+ifdef CONFIG_SND_SOC_LCT_PINCTRL
+        EXTRA_CFLAGS += -DCONFIG_SND_SOC_LCT_PINCTRL
+        LCT_PINCTRL_OBJS := lct_pinctrl/lct_pinctrl.o
+endif
+
 ifdef CONFIG_SND_SOC_AW87XXX
 	AW87XXX_OBJS += aw87xxx/aw87xxx.o
 	AW87XXX_OBJS += aw87xxx/aw_device.o
@@ -332,6 +338,9 @@ wsa881x_dlkm-y := $(WSA881X_OBJS)
 
 obj-$(CONFIG_SND_SOC_SWR_DMIC) += swr_dmic_dlkm.o
 swr_dmic_dlkm-y := $(SWR_DMIC_OBJS)
+
+obj-$(CONFIG_SND_SOC_LCT_PINCTRL) += lct_pinctrl_dlkm.o
+lct_pinctrl_dlkm-y := $(LCT_PINCTRL_OBJS)
 
 obj-$(CONFIG_SND_SOC_AW87XXX) += aw87xxx_dlkm.o
 aw87xxx_dlkm-y := $(AW87XXX_OBJS)
