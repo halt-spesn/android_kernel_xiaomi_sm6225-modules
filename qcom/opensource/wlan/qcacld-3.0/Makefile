@@ -18,6 +18,7 @@ KBUILD_OPTIONS += \
     WLAN_COMMON_ROOT=cmn \
     WLAN_COMMON_INC=$(KERNEL_SRC)/$(M)/cmn \
     WLAN_FW_API=$(KERNEL_SRC)/$(M)/../fw-api \
+    BOARD_PLATFORM=bengal \
     CONFIG_QCA_CLD_WLAN=m \
     WLAN_PROFILE=default \
     CONFIG_ICNSS2=m \
@@ -27,9 +28,8 @@ KBUILD_OPTIONS += \
     CONFIG_CNSS_GENL=m \
     CONFIG_WCNSS_MEM_PRE_ALLOC=m \
     CONFIG_CNSS_UTILS=m \
-    DYNAMIC_SINGLE_CHIP= \
     MODNAME=wlan \
-    BOARD_PLATFORM=bengal
+    KERNEL_SUPPORTS_NESTED_COMPOSITES=n
 endif
 
 KBUILD_OPTIONS += KBUILD_EXTRA_SYMBOLS=$(OUT_DIR)/../sm6225-modules/qcom/opensource/wlan/platform/Module.symvers
