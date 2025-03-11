@@ -6,6 +6,8 @@
 #include <linux/wait.h>
 #include <linux/time.h>
 #include <linux/jiffies.h>
+#include <linux/kernel.h>
+#include <linux/version.h>
 #include <sound/asound.h>
 #include <sound/soc.h>
 #include <sound/control.h>
@@ -807,7 +809,11 @@ int elliptic_system_configuration_param_put(
 	struct soc_mixer_control *mc =
 		(struct soc_mixer_control *)kcontrol->private_value;
 	struct elliptic_system_configuration_parameter param;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 	struct timespec tv;
+#else
+        struct timespec64 tv;
+#endif
 
 	if (mc->reg != ELLIPTIC_SYSTEM_CONFIGURATION)
 		return -EINVAL;
@@ -925,7 +931,11 @@ int elliptic_system_configuration_param_put(
 		param.type = ESCPT_CALIBRATION_METHOD;
 		param.calibration_method =
 		elliptic_system_configuration_cache.calibration_method;
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 		getnstimeofday(&tv);
+#else
+                ktime_get_real_ts64(&tv);
+#endif
 		param.calibration_timestamp = (int32_t)tv.tv_sec;
 		break;
 	case ELLIPTIC_SYSTEM_CONFIGURATION_DEBUG_MODE:

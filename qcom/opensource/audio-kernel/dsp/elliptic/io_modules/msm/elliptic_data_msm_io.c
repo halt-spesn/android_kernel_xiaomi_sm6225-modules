@@ -48,7 +48,9 @@
 #include <elliptic/elliptic_device.h>
 
 #include <dsp/apr_elliptic.h>
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 #include <dsp/q6afe-v2.h>
+#endif
 
 #define IO_PING_PONG_BUFFER_SIZE 512
 #define AFE_MSM_RX_PSEUDOPORT_ID 0x8001
