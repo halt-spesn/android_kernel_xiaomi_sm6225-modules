@@ -28,6 +28,9 @@
 #include "internal.h"
 #include "asoc/bolero-slave-internal.h"
 #include <linux/qti-regmap-debugfs.h>
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+#include <elliptic/elliptic_mixer_controls.h>
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 #define WCD9370_VARIANT 0
 #define WCD9375_VARIANT 5
@@ -3243,6 +3246,11 @@ static int wcd937x_soc_codec_probe(struct snd_soc_component *component)
 			return ret;
 		}
 	}
+
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	elliptic_add_component_controls(component);
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
+
 	return ret;
 
 err_hwdep:
