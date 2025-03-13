@@ -695,7 +695,7 @@ static int32_t elliptic_send_calibration_to_engine(size_t calib_data_size)
 #endif
 
 
-int __init elliptic_driver_init(void)
+static int __init elliptic_driver_init(void)
 {
 	int err;
 	int i;
@@ -780,7 +780,7 @@ fail:
 	return err;
 }
 
-void elliptic_driver_exit(void)
+static void elliptic_driver_exit(void)
 {
 	wakeup_source_unregister(wake_source);
 
@@ -790,6 +790,8 @@ void elliptic_driver_exit(void)
 //	elliptic_userspace_ctrl_driver_exit();
 }
 
+module_init(elliptic_driver_init);
+module_exit(elliptic_driver_exit);
 MODULE_AUTHOR("Elliptic Labs");
 MODULE_DESCRIPTION("Providing Interface to UPS data");
 MODULE_LICENSE("GPL");
