@@ -73,18 +73,20 @@ int elliptic_data_io_cleanup(void)
 }
 int elliptic_io_open_port(int portid)
 {
-	if (portid == ULTRASOUND_RX_PORT_ID)
-		return afe_start_pseudo_port(AFE_MSM_RX_PSEUDOPORT_ID);
-	else
-		return afe_start_pseudo_port(AFE_MSM_TX_PSEUDOPORT_ID);
+//	if (portid == ULTRASOUND_RX_PORT_ID)
+//		return afe_start_pseudo_port(AFE_MSM_RX_PSEUDOPORT_ID);
+//	else
+//		return afe_start_pseudo_port(AFE_MSM_TX_PSEUDOPORT_ID);
+	return 0;
 }
 
 int elliptic_io_close_port(int portid)
 {
-	if (portid == ULTRASOUND_RX_PORT_ID)
-		return afe_stop_pseudo_port(AFE_MSM_RX_PSEUDOPORT_ID);
-	else
-		return afe_stop_pseudo_port(AFE_MSM_TX_PSEUDOPORT_ID);
+//	if (portid == ULTRASOUND_RX_PORT_ID)
+//		return afe_stop_pseudo_port(AFE_MSM_RX_PSEUDOPORT_ID);
+//	else
+//		return afe_stop_pseudo_port(AFE_MSM_TX_PSEUDOPORT_ID);
+	return 0;
 }
 
 int32_t elliptic_data_io_write(uint32_t message_id, const char *data,
