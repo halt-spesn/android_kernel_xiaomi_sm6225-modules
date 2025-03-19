@@ -159,15 +159,6 @@ include $(DLKM_DIR)/Build_external_kernelmodule.mk
 ###########################################################
 include $(CLEAR_VARS)
 LOCAL_SRC_FILES           := $(AUDIO_SRC_FILES)
-LOCAL_MODULE              := elliptic_dlkm.ko
-LOCAL_MODULE_KBUILD_NAME  := dsp/elliptic_dlkm.ko
-LOCAL_MODULE_TAGS         := optional
-LOCAL_MODULE_DEBUG_ENABLE := true
-LOCAL_MODULE_PATH         := $(KERNEL_MODULES_OUT)
-include $(DLKM_DIR)/Build_external_kernelmodule.mk
-###########################################################
-include $(CLEAR_VARS)
-LOCAL_SRC_FILES           := $(AUDIO_SRC_FILES)
 LOCAL_MODULE              := adsp_loader_dlkm.ko
 LOCAL_MODULE_KBUILD_NAME  := dsp/adsp_loader_dlkm.ko
 LOCAL_MODULE_TAGS         := optional

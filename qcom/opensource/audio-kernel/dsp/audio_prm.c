@@ -18,6 +18,9 @@
 #include <dsp/audio_prm.h>
 #include <dsp/spf-core.h>
 #include <dsp/audio_notifier.h>
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+#include <dsp/gpr_elliptic.h>
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 #define TIMEOUT_MS 500
 #define MAX_RETRY_COUNT 3
@@ -45,6 +48,15 @@ static int audio_prm_callback(struct gpr_device *adev, void *data)
 
 	//dev_err(&adev->dev, "%s: Payload %x", __func__, hdr->opcode);
 	switch (hdr->opcode) {
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	case ULTRASOUND_OPCODE:
+		if (NULL != payload) {
+			elliptic_process_gpr_payload(payload);
+		} else {
+			pr_err("[EXPORT_SYMBOLLUS]: ELUS payload ptr is Invalid");
+		}
+		break;
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	case GPR_IBASIC_RSP_RESULT:
 		pr_err("%s: Failed response received",__func__);
 		atomic_set(&g_prm.status, payload[1]);
@@ -80,6 +92,18 @@ static int audio_prm_callback(struct gpr_device *adev, void *data)
 		wake_up(&g_prm.wait);
 	return 0;
 }
+
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+prm_ultrasound_state_t elus_prm = {
+	.ptr_gpr = (struct gpr_device *)&g_prm.adev,
+	.ptr_status= &g_prm.status,
+	.ptr_state= &g_prm.state,
+	.ptr_wait= &g_prm.wait,
+	.ptr_prm_gpr_lock= &g_prm.lock,
+	.timeout_ms= TIMEOUT_MS,
+};
+EXPORT_SYMBOL(elus_prm);
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 static int prm_gpr_send_pkt(struct gpr_pkt *pkt, wait_queue_head_t *wait)
 {
@@ -743,6 +767,9 @@ static int __init audio_prm_module_init(void)
 	int ret;
 	ret = gpr_driver_register(&qcom_audio_prm_driver);
 
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	elliptic_driver_init();
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	if (ret)
 		pr_err("%s: gpr driver register failed = %d\n", __func__, ret);
 
@@ -754,6 +781,9 @@ static int __init audio_prm_module_init(void)
 static void __exit audio_prm_module_exit(void)
 {
 	mutex_destroy(&g_prm.lock);
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+	elliptic_driver_exit();
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 	gpr_driver_unregister(&qcom_audio_prm_driver);
 }
 

@@ -47,7 +47,7 @@
 #include <elliptic/elliptic_data_io.h>
 #include <elliptic/elliptic_device.h>
 
-#include <dsp/apr_elliptic.h>
+#include <dsp/gpr_elliptic.h>
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(5, 10, 0))
 #include <dsp/q6afe-v2.h>
 #endif
@@ -96,7 +96,7 @@ int32_t elliptic_data_io_write(uint32_t message_id, const char *data,
 
 	/* msm_pcm_routing_acquire_lock(); */
 
-	result = ultrasound_apr_set_parameter(ELLIPTIC_PORT_ID,
+	result = ultrasound_gpr_set_parameter(ELLIPTIC_PORT_ID,
 		message_id, (u8 *)data,
 		(int32_t)data_size);
 

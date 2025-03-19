@@ -33,7 +33,7 @@
 #include <elliptic/elliptic_device.h>
 #include <elliptic/elliptic_data_io.h>
 #include <elliptic/elliptic_mixer_controls.h>
-#include <dsp/apr_elliptic.h>
+#include <dsp/gpr_elliptic.h>
 
 
 /* Alternative mechanism to load calibration data.
@@ -695,7 +695,7 @@ static int32_t elliptic_send_calibration_to_engine(size_t calib_data_size)
 #endif
 
 
-static int __init elliptic_driver_init(void)
+int __init elliptic_driver_init(void)
 {
 	int err;
 	int i;
@@ -780,7 +780,7 @@ fail:
 	return err;
 }
 
-static void elliptic_driver_exit(void)
+void elliptic_driver_exit(void)
 {
 	wakeup_source_unregister(wake_source);
 
@@ -790,8 +790,6 @@ static void elliptic_driver_exit(void)
 //	elliptic_userspace_ctrl_driver_exit();
 }
 
-module_init(elliptic_driver_init);
-module_exit(elliptic_driver_exit);
 MODULE_AUTHOR("Elliptic Labs");
 MODULE_DESCRIPTION("Providing Interface to UPS data");
 MODULE_LICENSE("GPL");

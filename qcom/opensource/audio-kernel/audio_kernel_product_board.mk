@@ -41,7 +41,6 @@ PRODUCT_PACKAGES += $(KERNEL_MODULES_OUT)/q6_notifier_dlkm.ko\
 	$(KERNEL_MODULES_OUT)/gpr_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/audio_pkt_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/q6_dlkm.ko \
-        $(KERNEL_MODULES_OUT)/elliptic_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/adsp_loader_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/audio_prm_dlkm.ko \
 	$(KERNEL_MODULES_OUT)/q6_pdr_dlkm.ko \

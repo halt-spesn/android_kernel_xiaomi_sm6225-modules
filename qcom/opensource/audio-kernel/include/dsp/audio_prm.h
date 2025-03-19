@@ -656,5 +656,9 @@ int audio_prm_set_rsc_hw_csr_update(uint32_t phy_addr, uint32_t bit_mask, uint32
 void audio_prm_set_lpi_logging_status(int lpi_pcm_logging_enable);
 int audio_prm_set_vote_against_sleep(uint8_t enable);
 int audio_prm_set_slimbus_clock_src(uint32_t clock, uint32_t slimbus_dev_id);
+#ifdef CONFIG_AUDIO_ELLIPTIC_ULTRASOUND
+int elliptic_driver_init(void);
+void  elliptic_driver_exit(void);
+#endif /* CONFIG_AUDIO_ELLIPTIC_ULTRASOUND */
 
 #endif
