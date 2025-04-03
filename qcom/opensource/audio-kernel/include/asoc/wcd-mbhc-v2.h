@@ -529,8 +529,6 @@ struct wcd_mbhc_cb {
 	bool (*mbhc_get_moisture_status)(struct wcd_mbhc *mbhc);
 	void (*mbhc_moisture_polling_ctrl)(struct wcd_mbhc *mbhc, bool enable);
 	void (*mbhc_moisture_detect_en)(struct wcd_mbhc *mbhc, bool enable);
-	/* lct modify for 05514178 */
-	void (*mbhc_test_ctrl)(struct wcd_mbhc *mbhc, bool enable);
 };
 
 struct wcd_mbhc_fn {

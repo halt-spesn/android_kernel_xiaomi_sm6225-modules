@@ -164,4 +164,3 @@ MODULE_AUTHOR("LCT SW <support@longcheer.com>");
 MODULE_DESCRIPTION("Platfrom Controller driver");
 MODULE_VERSION(LCT_PINCTRL_DRV_VERSION);
 MODULE_LICENSE("GPL");
-
