@@ -1190,7 +1190,7 @@ static int msm_rx_tx_codec_init(struct snd_soc_pcm_runtime *rtd)
 	pr_err("%s:: dapm new controls msm_int_dapm_widgets \n", __func__);
 
 #ifdef CONFIG_SND_SOC_AW87XXX
-	ret = aw87xxx_add_codec_controls(component);
+	ret = aw87xxx_add_codec_controls(bolero_component);
 	if (ret < 0) {
 		pr_err("%s: aw87xxx_add_codec_controls failed, err %d\n",
 			__func__, ret);

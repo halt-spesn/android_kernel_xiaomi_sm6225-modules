@@ -186,12 +186,6 @@ static int wcd937x_init_reg(struct snd_soc_component *component)
 				0xFF, 0xFA);
 	snd_soc_component_update_bits(component, WCD937X_MICB3_TEST_CTL_1,
 				0xFF, 0xFA);
-	snd_soc_component_update_bits(component, WCD937X_MICB1_TEST_CTL_2,
-				      0x38, 0x00);
-	snd_soc_component_update_bits(component, WCD937X_MICB2_TEST_CTL_2,
-				      0x38, 0x00);
-	snd_soc_component_update_bits(component, WCD937X_MICB3_TEST_CTL_2,
-				      0x38, 0x00);
 	return 0;
 }
 
@@ -1115,21 +1109,6 @@ static int wcd937x_codec_enable_ear_pa(struct snd_soc_dapm_widget *w,
 			snd_soc_component_update_bits(component,
 					WCD937X_DIGITAL_PDM_WD_CTL0,
 					0x17, 0x00);
-
-		//case 05657117 05669963 CR-30628852 BEGAIN
-		usleep_range(10000, 10100);
-		/* disable EAR CnP FSM */
-		snd_soc_component_update_bits(component,
-			     WCD937X_EAR_EAR_EN_REG, 0x02, 0x00);
-		/* toggle EAR PA to let PA control registers take effect */
-		snd_soc_component_update_bits(component,
-			     WCD937X_ANA_EAR, 0x80, 0x80);
-		snd_soc_component_update_bits(component,
-			     WCD937X_ANA_EAR, 0x80, 0x00);
-		/* enable EAR CnP FSM */
-		snd_soc_component_update_bits(component,
-			     WCD937X_EAR_EAR_EN_REG, 0x02, 0x02);
-		//case 05657117 05669963 CR-30628852 END
 		break;
 	};
 	return ret;
@@ -1789,10 +1768,6 @@ static int wcd937x_event_notify(struct notifier_block *block,
 		wcd937x_init_reg(component);
 		regcache_mark_dirty(wcd937x->regmap);
 		regcache_sync(wcd937x->regmap);
-		/* Enable surge protection */
-		snd_soc_component_update_bits(component,
-				WCD937X_HPH_SURGE_HPHLR_SURGE_EN,
-				0xFF, 0xD9);
 		/* Initialize MBHC module */
 		mbhc = &wcd937x->mbhc->wcd_mbhc;
 		ret = wcd937x_mbhc_post_ssr_init(wcd937x->mbhc, component);
@@ -1977,81 +1952,13 @@ static int wcd937x_tx_ch_pwr_level_put(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-static int wcd937x_aux_path_mode_get(struct snd_kcontrol *kcontrol,
-	struct snd_ctl_elem_value *ucontrol)
-{
-	int aux_mode;
-	struct snd_soc_component *component =
-		snd_soc_kcontrol_component(kcontrol);
-
-	aux_mode = ((snd_soc_component_read(component,
-		WCD937X_DIGITAL_CDC_PATH_MODE) & 0x40)>>6);
-
-	ucontrol->value.integer.value[0] = aux_mode;
-
-	dev_dbg(component->dev, "%s: aux_mode = 0x%x\n", __func__,
-		aux_mode);
-
-	return 0;
-}
-
-static int wcd937x_aux_path_mode_put(struct snd_kcontrol *kcontrol,
-	struct snd_ctl_elem_value *ucontrol)
-{
-	int aux_mode;
-	struct snd_soc_component *component =
-		snd_soc_kcontrol_component(kcontrol);
-	//struct wcd937x_priv *wcd937x = snd_soc_component_get_drvdata(component);
-
-	dev_dbg(component->dev, "%s: ucontrol->value.integer.value[0] = %ld\n",
-		__func__, ucontrol->value.integer.value[0]);
-
-	aux_mode = ucontrol->value.integer.value[0];
-
-	if (aux_mode) {
-		snd_soc_component_update_bits(component,
-			WCD937X_DIGITAL_CDC_PATH_MODE,
-			0x40, 0x40);
-		snd_soc_component_update_bits(component,
-			WCD937X_AUX_AUXPA,
-			0x10, 0x10);
-	} else {
-		snd_soc_component_update_bits(component,
-			WCD937X_DIGITAL_CDC_PATH_MODE,
-			0x40, 0x00);
-		snd_soc_component_update_bits(component,
-			WCD937X_AUX_AUXPA,
-			0x10, 0x00);
-	}
-	return 0;
-}
-
 #ifdef CONFIG_SND_SOC_AW87XXX
+static unsigned int g_wcd937x_aw87xxx_dev0_mode = 0;  /* receiver mode */
+static unsigned int g_wcd937x_aw87xxx_dev1_mode = 0; /* Speaker mode */
 extern int aw87xxx_show_current_profile_index(int dev_index);
-static unsigned int aw87xxx_spk_mode = 0;
-static unsigned int aw87xxx_rcv_mode = 0;
 
-static int aw87xxx_spk_pa_mode_get(struct snd_kcontrol *kcontrol,
-		struct snd_ctl_elem_value *ucontrol)
-{
-	int current_mode = 0;
-	current_mode = aw87xxx_show_current_profile_index(1);
-	ucontrol->value.integer.value[0] = current_mode;
-	pr_info("%s: get mode:%d\n", __func__, current_mode);
-	return 0;
-}
-
-static int aw87xxx_spk_pa_mode_set(struct snd_kcontrol *kcontrol,
-		struct snd_ctl_elem_value *ucontrol)
-{
-	int set_mode;
-	set_mode = ucontrol->value.integer.value[0];
-	aw87xxx_spk_mode = set_mode;
-	pr_info("%s: set mode:%d success", __func__, set_mode);
-	return 0;
-}
-
-static int aw87xxx_rcv_pa_mode_get(struct snd_kcontrol *kcontrol,
+/* Receiver mode */
+static int wcd937x_aw87xxx_dev0_mode_get(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	int current_mode = 0;
@@ -2061,12 +1968,33 @@ static int aw87xxx_rcv_pa_mode_get(struct snd_kcontrol *kcontrol,
 	return 0;
 }
 
-static int aw87xxx_rcv_pa_mode_set(struct snd_kcontrol *kcontrol,
+static int wcd937x_aw87xxx_dev0_mode_set(struct snd_kcontrol *kcontrol,
 		struct snd_ctl_elem_value *ucontrol)
 {
 	int set_mode;
 	set_mode = ucontrol->value.integer.value[0];
-	aw87xxx_rcv_mode = set_mode;
+	g_wcd937x_aw87xxx_dev0_mode = set_mode;
+	pr_info("%s: set mode:%d success", __func__, set_mode);
+	return 0;
+}
+
+/* Speaker mode*/
+static int wcd937x_aw87xxx_dev1_mode_get(struct snd_kcontrol *kcontrol,
+		struct snd_ctl_elem_value *ucontrol)
+{
+	int current_mode = 0;
+	current_mode = aw87xxx_show_current_profile_index(1);
+	ucontrol->value.integer.value[0] = current_mode;
+	pr_info("%s: get mode:%d\n", __func__, current_mode);
+	return 0;
+}
+
+static int wcd937x_aw87xxx_dev1_mode_set(struct snd_kcontrol *kcontrol,
+		struct snd_ctl_elem_value *ucontrol)
+{
+	int set_mode;
+	set_mode = ucontrol->value.integer.value[0];
+	g_wcd937x_aw87xxx_dev1_mode = set_mode;
 	pr_info("%s: set mode:%d success", __func__, set_mode);
 	return 0;
 }
@@ -2206,12 +2134,8 @@ static int wcd937x_codec_enable_vdd_buck(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
-static const char * const wcd937x_aux_path_mode_text[] = {
-	"HP_MODE", "NORMAL_MODE",
-};
-
 #ifdef CONFIG_SND_SOC_AW87XXX
-static const char *const mode_function[] = { "Music", "Voice", "Voip",
+static const char *const wcd937x_aw87xxx_mode_function[] = { "Music", "Voice", "Voip",
 		"Ringtone", "Ringtone_hs", "Lowpower", "Bypass", "Mmi",
 		"Fm", "Notification", "Receiver", "Off" };
 #endif /* CONFIG_SND_SOC_AW87XXX */
@@ -2363,12 +2287,8 @@ static const char * const wcd937x_ear_pa_gain_text[] = {
 	"G_M15_DB", "G_M16P5_DB", "G_M18_DB",
 };
 
-static const struct soc_enum wcd937x_aux_path_mode_enum =
-	SOC_ENUM_SINGLE_EXT(ARRAY_SIZE(wcd937x_aux_path_mode_text),
-			wcd937x_aux_path_mode_text);
-
 #ifdef CONFIG_SND_SOC_AW87XXX
-static SOC_ENUM_SINGLE_EXT_DECL(aw87xxx_mode, mode_function);
+static SOC_ENUM_SINGLE_EXT_DECL(wcd937x_aw87xxx_mode, wcd937x_aw87xxx_mode_function);
 #endif /* CONFIG_SND_SOC_AW87XXX */
 
 static const struct soc_enum rx_hph_mode_mux_enum =
@@ -2423,16 +2343,14 @@ static const struct snd_kcontrol_new wcd937x_snd_controls[] = {
 			wcd937x_tx_master_ch_get, wcd937x_tx_master_ch_put),
 	SOC_ENUM_EXT("TX CH1 PWR", wcd937x_tx_ch_pwr_level_enum,
 		wcd937x_tx_ch_pwr_level_get, wcd937x_tx_ch_pwr_level_put),
-#ifdef CONFIG_SND_SOC_AW87XXX
-	SOC_ENUM_EXT("aw87xxx_rcv_switch",aw87xxx_mode ,
-			aw87xxx_rcv_pa_mode_get, aw87xxx_rcv_pa_mode_set),
-	SOC_ENUM_EXT("aw87xxx_spk_switch",aw87xxx_mode ,
-			aw87xxx_spk_pa_mode_get, aw87xxx_spk_pa_mode_set),
-#endif /* CONFIG_SND_SOC_AW87XXX */
 	SOC_ENUM_EXT("TX CH3 PWR", wcd937x_tx_ch_pwr_level_enum,
 		wcd937x_tx_ch_pwr_level_get, wcd937x_tx_ch_pwr_level_put),
-	SOC_ENUM_EXT("AUX PATH Mode", wcd937x_aux_path_mode_enum,
-		wcd937x_aux_path_mode_get, wcd937x_aux_path_mode_put),
+#ifdef CONFIG_SND_SOC_AW87XXX
+	SOC_ENUM_EXT("wcd937x_aw87xxx_dev0_mode",wcd937x_aw87xxx_mode ,
+			wcd937x_aw87xxx_dev0_mode_get, wcd937x_aw87xxx_dev0_mode_set),
+	SOC_ENUM_EXT("wcd937x_aw87xxx_dev1_mode",wcd937x_aw87xxx_mode ,
+			wcd937x_aw87xxx_dev1_mode_get, wcd937x_aw87xxx_dev1_mode_set),			
+#endif /* CONFIG_SND_SOC_AW87XXX */
 };
 
 static const struct snd_kcontrol_new adc1_switch[] = {
@@ -2515,7 +2433,7 @@ extern int aw87xxx_set_profile(int dev_index, char *profile);
 
 enum aw87xxx_dev_index {
 	AW_DEV_0 = 0,
-	AW_DEV_1 = 1,
+	AW_DEV_1 = 0,
 };
 
 /* copy from aw_acf_bin.c */
@@ -2560,68 +2478,58 @@ int aw87xxx_dev_0_pa(int enable, int mode)
 }
 
 int aw87xxx_dev_1_pa(int enable, int mode)
+ {
+ 	int ret = 0;
+ 	unsigned char set_mode;
+ 
+ 	if (false == enable)
+ 		set_mode = AW_PROFILE_OFF;
+ 	else
+ 		set_mode = mode;
+ 	pr_info("%s: aw87xxx_dev_1_mode %d\n", __func__, set_mode);
+
+ 	ret = aw87xxx_set_profile(AW_DEV_1, aw_profile[set_mode]);
+ 	if (ret < 0) {
+ 		pr_err("%s: mode:%d set failed\n", __func__, set_mode);
+ 		return -EPERM;
+ 	}
+ 	return 0;
+ }
+
+static int aw87xxx_pa_dev_0_event(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol, int event)
 {
-	int ret = 0;
-	unsigned char set_mode;
-
-	if (false == enable)
-		set_mode = AW_PROFILE_OFF;
-	else
-		set_mode = mode;
-	pr_info("%s: aw87xxx_spk_mode %d\n", __func__, set_mode);
-#if defined(CONFIG_TARGET_PROJECT_C3Q)
-	ret = aw87xxx_set_profile(AW_DEV_0, aw_profile[set_mode]);
-#else
-	ret = aw87xxx_set_profile(AW_DEV_1, aw_profile[set_mode]);
-#endif
-
-	if (ret < 0) {
-		pr_err("%s: mode:%d set failed\n", __func__, set_mode);
-		return -EPERM;
-	}
-	return 0;
-}
-
-static int aw87xxx_dev_0_pa_event(struct snd_soc_dapm_widget *w,
-		     struct snd_kcontrol *control, int event)
-{
-	int mode = aw87xxx_rcv_mode;
-
+	int mode = g_wcd937x_aw87xxx_dev0_mode;
 	switch (event) {
-	case SND_SOC_DAPM_POST_PMU:
-		aw87xxx_dev_0_pa(true, mode);
-		break;
-	case SND_SOC_DAPM_PRE_PMD:
-		aw87xxx_dev_0_pa(false, mode);
-		break;
-	default:
-		pr_err("%s: Unexpected event", __func__);
-		break;
+		case SND_SOC_DAPM_POST_PMU:
+			aw87xxx_dev_0_pa(true, mode);
+			break;
+		case SND_SOC_DAPM_PRE_PMD:
+			aw87xxx_dev_0_pa(false, mode);
+			break;
+		default:
+		pr_err("%s: invalid DAPM event %d\n", __func__, event);
+		return -EINVAL;
 	}
-
 	return 0;
 }
 
-static int aw87xxx_dev_1_pa_event(struct snd_soc_dapm_widget *w,
-		     struct snd_kcontrol *control, int event)
+static int aw87xxx_pa_dev_1_event(struct snd_soc_dapm_widget *w, struct snd_kcontrol *kcontrol, int event)
 {
-	int mode = aw87xxx_spk_mode;
-
+	int mode = g_wcd937x_aw87xxx_dev1_mode;
 	switch (event) {
-	case SND_SOC_DAPM_POST_PMU:
-		aw87xxx_dev_1_pa(true, mode);
-		break;
-	case SND_SOC_DAPM_PRE_PMD:
-		aw87xxx_dev_1_pa(false, mode);
-		break;
-	default:
-		pr_err("%s: Unexpected event", __func__);
-		break;
+		case SND_SOC_DAPM_POST_PMU:
+			aw87xxx_dev_1_pa(true, mode);
+			break;
+		case SND_SOC_DAPM_PRE_PMD:
+			aw87xxx_dev_1_pa(false, mode);
+			break;
+		default:
+		pr_err("%s: invalid DAPM event %d\n", __func__, event);
+		return -EINVAL;
 	}
-
 	return 0;
 }
-#endif
+#endif /* CONFIG_SND_SOC_AW87XXX */
 
 static const struct snd_soc_dapm_widget wcd937x_dapm_widgets[] = {
 
@@ -2778,12 +2686,12 @@ static const struct snd_soc_dapm_widget wcd937x_dapm_widgets[] = {
 
 #ifdef CONFIG_SND_SOC_AW87XXX
 	SND_SOC_DAPM_OUT_DRV_E("AW87XXX_DEV_0", SND_SOC_NOPM, 0, 0, NULL, 0,
-				aw87xxx_dev_0_pa_event, SND_SOC_DAPM_POST_PMU |
+				aw87xxx_pa_dev_0_event, SND_SOC_DAPM_POST_PMU |
 				SND_SOC_DAPM_PRE_PMD),
 	SND_SOC_DAPM_OUT_DRV_E("AW87XXX_DEV_1", SND_SOC_NOPM, 0, 0, NULL, 0,
-				aw87xxx_dev_1_pa_event, SND_SOC_DAPM_POST_PMU |
+				aw87xxx_pa_dev_1_event, SND_SOC_DAPM_POST_PMU |
 				SND_SOC_DAPM_PRE_PMD),
-#endif
+#endif /* CONFIG_SND_SOC_AW87XXX */
 
 };
 
@@ -2904,7 +2812,7 @@ static const struct snd_soc_dapm_route wcd937x_audio_map[] = {
 	{"AUX", NULL, "AW87XXX_DEV_1"},
 #else
 	{"AUX", NULL, "AUX PGA"},
-#endif
+#endif /* CONFIG_SND_SOC_AW87XXX */
 
 	{"RDAC3_MUX", "RX3", "RX3"},
 	{"RDAC3_MUX", "RX1", "RX1"},
@@ -2912,8 +2820,8 @@ static const struct snd_soc_dapm_route wcd937x_audio_map[] = {
 	{"EAR_RDAC", "Switch", "RDAC3"},
 	{"EAR PGA", NULL, "EAR_RDAC"},
 #if defined(CONFIG_SND_SOC_AW87XXX) && defined(CONFIG_TARGET_PROJECT_K7T)
-	{"AW87XXX_DEV_0", NULL, "EAR PGA"},
-	{"EAR", NULL, "AW87XXX_DEV_0"},
+ 	{"AW87XXX_DEV_0", NULL, "EAR PGA"},
+ 	{"EAR", NULL, "AW87XXX_DEV_0"},
 #else
 	{"EAR", NULL, "EAR PGA"},
 #endif
