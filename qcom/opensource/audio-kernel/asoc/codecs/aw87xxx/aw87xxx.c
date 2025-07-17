@@ -61,6 +61,7 @@
 /*************************************************************************
  * aw87xxx variable
  ************************************************************************/
+#define FW_ACTION_HOTPLUG 1
 static LIST_HEAD(g_aw87xxx_list);
 static DEFINE_MUTEX(g_aw87xxx_mutex_lock);
 unsigned int g_aw87xxx_dev_cnt = 0;
@@ -740,7 +741,7 @@ static void aw87xxx_fw_load_work_routine(struct work_struct *work)
 
 	if (prof_info->status == AW_ACF_WAIT) {
 		request_firmware_nowait(THIS_MODULE,
-				1,
+				FW_ACTION_HOTPLUG,
 				aw87xxx->fw_name,
 				aw87xxx->dev,
 				GFP_KERNEL, aw87xxx,

@@ -2,7 +2,7 @@
 #define __AW_DSP_H__
 
 /*#define AW_MTK_OPEN_DSP_PLATFORM*/
-//#define AW_QCOM_OPEN_DSP_PLATFORM //disable it for 5.15
+//#define AW_QCOM_OPEN_DSP_PLATFORM
 
 /*Note: The pord_ID is configured according to different platforms*/
 #define AFE_PORT_ID_AWDSP_RX	(0xb030)

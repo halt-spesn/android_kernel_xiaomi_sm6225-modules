@@ -1,51 +1,51 @@
 # We can build either as part of a standalone Kernel build or as
 # an external module.  Determine which mechanism is being used
 ifeq ($(MODNAME),)
-	KERNEL_BUILD := 1
+        KERNEL_BUILD := 1
 else
-	KERNEL_BUILD := 0
+        KERNEL_BUILD := 0
 endif
 
 
 
 ifeq ($(KERNEL_BUILD), 1)
-	# These are configurable via Kconfig for kernel-based builds
-	# Need to explicitly configure for Android-based builds
-	AUDIO_BLD_DIR := $(ANDROID_BUILD_TOP)/kernel/msm-5.4
-	AUDIO_ROOT := $(AUDIO_BLD_DIR)/techpack/audio
+        # These are configurable via Kconfig for kernel-based builds
+        # Need to explicitly configure for Android-based builds
+        AUDIO_BLD_DIR := $(ANDROID_BUILD_TOP)/kernel/msm-5.4
+        AUDIO_ROOT := $(AUDIO_BLD_DIR)/techpack/audio
 endif
 
 ifeq ($(KERNEL_BUILD), 0)
-	ifeq ($(CONFIG_ARCH_SM6150), y)
-		include $(AUDIO_ROOT)/config/sm6150auto.conf
-		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
-	endif
-	ifeq ($(CONFIG_ARCH_TRINKET), y)
-		include $(AUDIO_ROOT)/config/sm6150auto.conf
-		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
-	endif
-	ifeq ($(CONFIG_ARCH_KHAJE), y)
-		include $(AUDIO_ROOT)/config/bengalauto.conf
-		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/bengalautoconf.h
-	endif
-	ifeq ($(CONFIG_ARCH_LITO), y)
-		include $(AUDIO_ROOT)/config/litoauto.conf
-		export
-		INCS    +=  -include $(AUDIO_ROOT)/config/litoautoconf.h
-	endif
-	ifeq ($(CONFIG_ARCH_WAIPIO), y)
-		include $(AUDIO_ROOT)/config/waipioauto.conf
-		INCS    +=  -include $(AUDIO_ROOT)/config/waipioautoconf.h
-	endif
+        ifeq ($(CONFIG_ARCH_SM6150), y)
+                include $(AUDIO_ROOT)/config/sm6150auto.conf
+                export
+                INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
+        endif
+        ifeq ($(CONFIG_ARCH_TRINKET), y)
+                include $(AUDIO_ROOT)/config/sm6150auto.conf
+                export
+                INCS    +=  -include $(AUDIO_ROOT)/config/sm6150autoconf.h
+        endif
+        ifeq ($(CONFIG_ARCH_KHAJE), y)
+                include $(AUDIO_ROOT)/config/bengalauto.conf
+                export
+                INCS    +=  -include $(AUDIO_ROOT)/config/bengalautoconf.h
+        endif
+        ifeq ($(CONFIG_ARCH_LITO), y)
+                include $(AUDIO_ROOT)/config/litoauto.conf
+                export
+                INCS    +=  -include $(AUDIO_ROOT)/config/litoautoconf.h
+        endif
+        ifeq ($(CONFIG_ARCH_WAIPIO), y)
+                include $(AUDIO_ROOT)/config/waipioauto.conf
+                INCS    +=  -include $(AUDIO_ROOT)/config/waipioautoconf.h
+        endif
 endif
 
 # As per target team, build is done as follows:
 # Defconfig : build with default flags
 # Slub      : defconfig  + CONFIG_SLUB_DEBUG := y +
-#	      CONFIG_SLUB_DEBUG_ON := y + CONFIG_PAGE_POISONING := y
+#             CONFIG_SLUB_DEBUG_ON := y + CONFIG_PAGE_POISONING := y
 # Perf      : Using appropriate msmXXXX-perf_defconfig
 #
 # Shipment builds (user variants) should not have any debug feature
@@ -59,42 +59,42 @@ endif
 # config.
 
 ############ UAPI ############
-UAPI_DIR :=	uapi/audio
-UAPI_INC :=	-I$(AUDIO_ROOT)/include/$(UAPI_DIR)
+UAPI_DIR :=     uapi/audio
+UAPI_INC :=     -I$(AUDIO_ROOT)/include/$(UAPI_DIR)
 
 ############ COMMON ############
-COMMON_DIR :=	include
-COMMON_INC :=	-I$(AUDIO_ROOT)/$(COMMON_DIR)
+COMMON_DIR :=   include
+COMMON_INC :=   -I$(AUDIO_ROOT)/$(COMMON_DIR)
 
 ############ AW87XXX ############
 
 # for AW87XXX Codec
 ifdef CONFIG_SND_SOC_AW87XXX
-	AW87XXX_OBJS += aw87xxx.o
-	AW87XXX_OBJS += aw87xxx_acf_bin.o
-	AW87XXX_OBJS += aw87xxx_bin_parse.o
-	AW87XXX_OBJS += aw87xxx_device.o
-	AW87XXX_OBJS += aw87xxx_dsp.o
-	AW87XXX_OBJS += aw87xxx_monitor.o
+        AW87XXX_OBJS += aw87xxx.o
+        AW87XXX_OBJS += aw_acf_bin.o
+        AW87XXX_OBJS += aw_bin_parse.o
+        AW87XXX_OBJS += aw_device.o
+        AW87XXX_OBJS += aw_dsp.o
+        AW87XXX_OBJS += aw_monitor.o
 endif
 
-LINUX_INC +=	-Iinclude/linux
+LINUX_INC +=    -Iinclude/linux
 
-INCS +=		$(COMMON_INC) \
-		$(UAPI_INC)
+INCS +=         $(COMMON_INC) \
+                $(UAPI_INC)
 
 EXTRA_CFLAGS += $(INCS)
 
 
-CDEFINES +=	-DANI_LITTLE_BYTE_ENDIAN \
-		-DANI_LITTLE_BIT_ENDIAN \
-		-DDOT11F_LITTLE_ENDIAN_HOST \
-		-DANI_COMPILER_TYPE_GCC \
-		-DANI_OS_TYPE_ANDROID=6 \
-		-DPTT_SOCK_SVC_ENABLE \
-		-Wall\
-		-Werror\
-		-D__linux__
+CDEFINES +=     -DANI_LITTLE_BYTE_ENDIAN \
+                -DANI_LITTLE_BIT_ENDIAN \
+                -DDOT11F_LITTLE_ENDIAN_HOST \
+                -DANI_COMPILER_TYPE_GCC \
+                -DANI_OS_TYPE_ANDROID=6 \
+                -DPTT_SOCK_SVC_ENABLE \
+                -Wall\
+                -Werror\
+                -D__linux__
 
 KBUILD_CPPFLAGS += $(CDEFINES)
 
@@ -115,3 +115,6 @@ endif
 # Module information used by KBuild framework
 obj-$(CONFIG_SND_SOC_AW87XXX) += aw87xxx_dlkm.o
 aw87xxx_dlkm-y := $(AW87XXX_OBJS)
+
+# inject some build related information
+DEFINES += -DBUILD_TIMESTAMP=\"$(shell date -u +'%Y-%m-%dT%H:%M:%SZ')\"
