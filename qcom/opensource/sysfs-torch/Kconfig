@@ -1,0 +1,5 @@
+config FLASHLIGHT_DRIVER
+        tristate "spes brightness control"
+        depends on LEDS_CLASS
+        help
+           GPIO flashlight brighness control for spes.
