@@ -18,6 +18,93 @@ struct gpio_flash_led mgpio_flash_led = {
 #endif
 /* Spes flashlight by muralivijay@github */
 
+//------add flash node-liyongyi-2022/9/28 start
+struct cam_flash_ctrl *flash_fctrl = NULL;
+int led_flash_state = 0;
+struct cam_sensor_i2c_reg_array flash_init_array[3] = {{0x01, 0x00, 0, 0},
+							{0x03, 0x56, 0, 0},
+							{0x04, 0x2C, 0, 0}};
+struct cam_sensor_i2c_reg_array flash_open_array[2] = {{0x04, 0x2C, 0, 0},
+							{0x01, 0x02, 0, 0}};
+struct cam_sensor_i2c_reg_array flash_close_array = {0x01, 0x00, 0, 0};
+struct cam_sensor_i2c_reg_setting flash_init_setting= {flash_init_array,
+						3,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						0,
+						NULL,
+						0};
+struct cam_sensor_i2c_reg_setting flash_open_setting= {flash_open_array,
+						2,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						0,
+						NULL,
+						0};
+struct cam_sensor_i2c_reg_setting flash_close_setting= {&flash_close_array,
+						1,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						CAMERA_SENSOR_I2C_TYPE_BYTE,
+						0,
+						NULL,
+						0};
+static enum led_brightness torch_brightness_get(struct led_classdev *cdev)
+{
+	return led_flash_state;
+}
+static void torch_brightness_set(struct led_classdev *cdev, enum led_brightness level)
+{
+	int rc = 0;
+	uint32_t read_fault_flag = 0;
+	CAM_ERR(CAM_FLASH,"set torch brightness level:%d", level);
+
+	if ((level > 0 && led_flash_state > 0) || (level == 0 && led_flash_state == 0))
+	{
+		led_flash_state = level;
+		CAM_INFO(CAM_FLASH, "same state! no need to set");
+		return;
+	}
+
+	rc = cam_flash_i2c_power_ops(flash_fctrl, true);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "regulator power up for flash failed %d",  rc);
+		return;
+	}
+	rc = camera_io_dev_read(&flash_fctrl->io_master_info,0x05,&read_fault_flag,1,1);
+	if (rc != 0)
+	{
+		CAM_ERR(CAM_FLASH, "Clear fault flag for ktd2691 flash failed %d",  rc);
+	}
+	if (level > 0) {
+		rc = camera_io_dev_write(&flash_fctrl->io_master_info, &flash_init_setting);
+		if (rc < 0) {
+			CAM_ERR(CAM_FLASH, "init flash failed %d",  rc);
+			return;
+		}
+		//flash_open_setting
+		rc = camera_io_dev_write(&flash_fctrl->io_master_info, &flash_open_setting);
+		if (rc < 0) {
+			CAM_ERR(CAM_FLASH, "open flash failed %d",  rc);
+			return;
+		}
+          	led_flash_state = level;
+	} else {
+		//flash_close_setting
+		rc = camera_io_dev_write(&flash_fctrl->io_master_info, &flash_close_setting);
+		if (rc < 0) {
+			CAM_ERR(CAM_FLASH, "close flash failed");
+			return;
+		}
+          	led_flash_state = 0;
+	}
+	rc = cam_flash_i2c_power_ops(flash_fctrl, false);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "regulator power down for flash failed %d",  rc);
+		return;
+	}
+}
+//------add flash node-liyongyi-2022/9/28 start
+
 static int32_t cam_flash_driver_cmd(struct cam_flash_ctrl *fctrl,
 		void *arg, struct cam_flash_private_soc *soc_private)
 {
@@ -257,6 +344,7 @@ static long cam_flash_subdev_ioctl(struct v4l2_subdev *sd,
 	unsigned int cmd, void *arg)
 {
 	int rc = 0;
+	uint32_t read_fault_flag = 0;
 	struct cam_flash_ctrl *fctrl = NULL;
 	struct cam_flash_private_soc *soc_private = NULL;
 
@@ -264,6 +352,13 @@ static long cam_flash_subdev_ioctl(struct v4l2_subdev *sd,
 
 	fctrl = v4l2_get_subdevdata(sd);
 	soc_private = fctrl->soc_info.soc_private;
+	//------Clear fault flag start
+	rc = camera_io_dev_read(&fctrl->io_master_info,0x05,&read_fault_flag,1,1);
+	if (rc == 0)
+	{
+		CAM_DBG(CAM_FLASH, "read_fault_flag %#x for ktd2691 flash",  read_fault_flag);
+	}
+	//------Clear fault  end
 
 	switch (cmd) {
 	case VIDIOC_CAM_CONTROL: {
@@ -421,9 +516,11 @@ static int cam_flash_init_subdev(struct cam_flash_ctrl *fctrl)
 static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 {
 	int32_t rc = 0, i = 0;
+	uint32_t FlashDeviceId = 0;
 	struct cam_flash_ctrl *fctrl     = NULL;
 	struct device_node *of_parent    = NULL;
 	struct cam_hw_soc_info *soc_info = NULL;
+
 /* Spes flashlight by muralivijay@github */
 #ifdef CONFIG_CAMERA_FLASH_SPES
         struct device_node *gnode = pdev->dev.of_node; //store qcom-flash-gpios
@@ -560,6 +657,45 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 		else
 			goto free_resource;
 	}
+//------add flash node-liyongyi-2022/9/28 start
+	flash_fctrl = fctrl;
+	flash_fctrl->io_master_info.cci_client->cci_i2c_master = fctrl->cci_i2c_master;
+	flash_fctrl->io_master_info.cci_client->i2c_freq_mode = I2C_FAST_MODE;
+	flash_fctrl->io_master_info.cci_client->sid = (0xc8 >> 1);
+	// register led_classdeev
+	fctrl->cdev.name = "led:torch";
+	fctrl->cdev.brightness_get = torch_brightness_get;
+	fctrl->cdev.brightness_set = torch_brightness_set;
+	fctrl->cdev.max_brightness = 255;
+	rc = devm_led_classdev_register(&pdev->dev, &fctrl->cdev);
+	if (rc < 0) {
+		CAM_ERR(CAM_FLASH, "devm_led_classdev_register failed with %d", rc);
+	}
+
+	rc = cam_flash_i2c_power_ops(flash_fctrl, true);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "hzk regulator power up for flash failed %d",  rc);
+		return -EINVAL;
+	}
+	rc = camera_io_dev_read(&flash_fctrl->io_master_info,0x06,&FlashDeviceId,1,1);
+	if (rc != 0)
+	{
+		CAM_ERR(CAM_FLASH, "read id for ktd2691 flash failed %d",  rc);
+	}
+
+	rc = camera_io_dev_write(&flash_fctrl->io_master_info, &flash_close_setting);
+	if (rc < 0) {
+		CAM_ERR(CAM_FLASH, "hzk : init flash closed state failed %d",  rc);
+		return -EINVAL;
+	}
+
+	rc = cam_flash_i2c_power_ops(flash_fctrl, false);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "hzk regulator power down for flash failed %d",  rc);
+		return -EINVAL;
+	}
+
+//------add flash node-liyongyi-2022/9/28 start
 
 	fctrl->bridge_intf.device_hdl = -1;
 	fctrl->bridge_intf.link_hdl = -1;
@@ -572,7 +708,7 @@ static int32_t cam_flash_platform_probe(struct platform_device *pdev)
 	mutex_init(&(fctrl->flash_mutex));
 
 	fctrl->flash_state = CAM_FLASH_STATE_INIT;
-	CAM_DBG(CAM_FLASH, "Probe success");
+	CAM_INFO(CAM_FLASH, "FlashDeviceId = %#x Probe success", FlashDeviceId);
 	return rc;
 
 free_cci_resource:
@@ -747,6 +883,33 @@ int32_t cam_flash_init_module(void)
 
 void cam_flash_exit_module(void)
 {
+	int rc = -1;
+
+	if(!flash_fctrl) {
+		CAM_ERR(CAM_FLASH, "flash_fctrl is NUll and skip close flash");
+		goto exit;
+	}
+
+	rc = cam_flash_i2c_power_ops(flash_fctrl, true);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "hzk regulator power up for flash failed %d",  rc);
+		goto exit;
+	}
+
+	rc = camera_io_dev_write(&flash_fctrl->io_master_info, &flash_close_setting);
+	if (rc < 0) {
+		CAM_ERR(CAM_FLASH, "hzk : init flash closed state failed %d",  rc);
+		goto exit;
+	}
+
+	rc = cam_flash_i2c_power_ops(flash_fctrl, false);
+	if (rc != 0) {
+		CAM_ERR(CAM_FLASH, "hzk regulator power down for flash failed %d",  rc);
+		goto exit;
+	}
+	CAM_ERR(CAM_FLASH, "hzk : close i2c flash when camera driver exit");
+
+exit:
 	platform_driver_unregister(&cam_flash_platform_driver);
 	i2c_del_driver(&cam_flash_i2c_driver);
 }

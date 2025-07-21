@@ -2433,29 +2433,18 @@ extern int aw87xxx_set_profile(int dev_index, char *profile);
 
 enum aw87xxx_dev_index {
 	AW_DEV_0 = 0,
-	AW_DEV_1 = 0,
+	AW_DEV_1 = 1,
 };
 
-/* copy from aw_acf_bin.c */
-static char *aw_profile[] = {"Music", "Voice", "Voip",
-		"Ringtone", "Ringtone_hs", "Lowpower", "Bypass", "Mmi",
-		"Fm", "Notification", "Receiver", "Off"};
+static char *aw_profile[] = {"Music", "Voice",
+		"Fm", "Receiver", "Off"};
 
-/* copy from aw_acf_bin.h */
 enum aw_bin_dev_profile_id {
 	AW_PROFILE_MUSIC = 0x0000,
 	AW_PROFILE_VOICE,
-	AW_PROFILE_VOIP,
-	AW_PROFILE_RINGTONE,
-	AW_PROFILE_RINGTONE_HS,
-	AW_PROFILE_LOWPOWER,
-	AW_PROFILE_BYPASS,
-	AW_PROFILE_MMI,
 	AW_PROFILE_FM,
-	AW_PROFILE_NOTIFICATION,
 	AW_PROFILE_RECEIVER,
 	AW_PROFILE_OFF,
-	AW_PROFILE_MAX,
 };
 
 int aw87xxx_dev_0_pa(int enable, int mode)
@@ -2481,7 +2470,7 @@ int aw87xxx_dev_1_pa(int enable, int mode)
  {
  	int ret = 0;
  	unsigned char set_mode;
- 
+
  	if (false == enable)
  		set_mode = AW_PROFILE_OFF;
  	else
@@ -2822,6 +2811,8 @@ static const struct snd_soc_dapm_route wcd937x_audio_map[] = {
 #if defined(CONFIG_SND_SOC_AW87XXX) && defined(CONFIG_TARGET_PROJECT_K7T)
  	{"AW87XXX_DEV_0", NULL, "EAR PGA"},
  	{"EAR", NULL, "AW87XXX_DEV_0"},
+	{"AW87XXX_DEV_1", NULL, "AUX PGA"},
+	{"AUX", NULL, "AW87XXX_DEV_1"},
 #else
 	{"EAR", NULL, "EAR PGA"},
 #endif

@@ -70,11 +70,11 @@
 #define OPE_STRIPE_RIGHT                    0x2
 #define OPE_STRIPE_MIDDLE                   0x3
 
-#define OPE_MAX_CMD_BUFS                    64
+#define OPE_MAX_CMD_BUFS                    48
 #define OPE_MAX_IO_BUFS                     (OPE_OUT_RES_MAX + OPE_IN_RES_MAX)
 #define OPE_MAX_PASS                        1
 #define OPE_MAX_PLANES                      2
-#define OPE_MAX_STRIPES                     48
+#define OPE_MAX_STRIPES                     64
 #define OPE_MAX_BATCH_SIZE                  16
 
 /**
