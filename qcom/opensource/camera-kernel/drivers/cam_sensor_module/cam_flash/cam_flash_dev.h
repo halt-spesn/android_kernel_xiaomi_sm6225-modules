@@ -230,9 +230,6 @@ struct cam_flash_ctrl {
 	uint32_t                            last_flush_req;
 	uint32_t                            streamoff_count;
 	int32_t                             apply_streamoff;
-  	//------add flash node-liyongyi-2022/9/28 start
-	struct led_classdev                 cdev;
-  	//------add flash node-liyongyi-2022/9/28 start
 };
 
 int cam_flash_pmic_pkt_parser(struct cam_flash_ctrl *fctrl, void *arg);

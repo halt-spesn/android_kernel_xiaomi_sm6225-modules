@@ -539,7 +539,6 @@ static void cam_res_mgr_gpio_free(struct device *dev, uint gpio)
 	if (need_free)
 		gpio_free(gpio);
 }
-
 #ifdef CONFIG_CAMERA_FLASH_SPES
 EXPORT_SYMBOL(cam_res_mgr_gpio_free);
 #endif

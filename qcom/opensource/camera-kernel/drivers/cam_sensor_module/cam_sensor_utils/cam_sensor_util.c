@@ -7,8 +7,9 @@
 #include "cam_sensor_util.h"
 #include "cam_mem_mgr.h"
 #include "cam_res_mgr_api.h"
+
 /* hzk add for camera power up bengin*/
-#include "wl2866d.h"
+#include "../../wl2866d/wl2866d.h"
 #define MAX_DELAY_TIME 65420
 #define DELAY_SETP 1000
 /* hzk add for camera power up end*/
@@ -1915,6 +1916,7 @@ int cam_sensor_core_power_up(struct cam_sensor_power_ctrl_t *ctrl,
 		}
 
 		CAM_DBG(CAM_SENSOR, "seq_type %d", power_setting->seq_type);
+
 		switch (power_setting->seq_type) {
 		case SENSOR_MCLK:
 			if (power_setting->seq_val >= soc_info->num_clk) {
@@ -1993,8 +1995,8 @@ int cam_sensor_core_power_up(struct cam_sensor_power_ctrl_t *ctrl,
 				goto power_up_failed;
 			}
 			CAM_DBG(CAM_SENSOR, "gpio set val %d",
-					gpio_num_info->gpio_num
-					[power_setting->seq_type]);
+				gpio_num_info->gpio_num
+				[power_setting->seq_type]);
 
 			rc = msm_cam_sensor_handle_reg_gpio(
 				power_setting->seq_type,
