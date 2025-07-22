@@ -628,6 +628,28 @@ int aw87xxx_add_codec_controls(void *codec)
 }
 EXPORT_SYMBOL(aw87xxx_add_codec_controls);
 
+/****************************************************************************
+ *
+ * aw87xxx device get by index
+ *
+ ****************************************************************************/
+struct aw87xxx *aw87xxx_get_dev_by_index(int index)
+{
+	struct list_head *pos = NULL;
+	struct aw87xxx *aw87xxx = NULL;
+
+	mutex_lock(&g_aw87xxx_mutex_lock);
+	list_for_each(pos, &g_aw87xxx_list) {
+		aw87xxx = list_entry(pos, struct aw87xxx, list);
+		if (aw87xxx && aw87xxx->dev_index == index) {
+			mutex_unlock(&g_aw87xxx_mutex_lock);
+			return aw87xxx;
+		}
+	}
+	mutex_unlock(&g_aw87xxx_mutex_lock);
+	return NULL;
+}
+EXPORT_SYMBOL(aw87xxx_get_dev_by_index);
 
 /****************************************************************************
  *

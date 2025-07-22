@@ -257,6 +257,62 @@ static int msm_dmic_event(struct snd_soc_dapm_widget *w,
 	return 0;
 }
 
+#ifdef CONFIG_SND_SOC_AW87XXX
+extern int aw87xxx_update_profile(struct aw87xxx *aw87xxx, char *profile);
+extern struct aw87xxx *aw87xxx_get_dev_by_index(int index);
+
+static int msm_aw87xxx_event(struct snd_soc_dapm_widget *w,
+			      struct snd_kcontrol *kcontrol, int event)
+{
+	struct aw87xxx *aw87xxx = NULL;
+	int dev_index = 0;
+	int ret = 0;
+
+	/* Extract device index from widget name */
+	if (strstr(w->name, "PA0"))
+		dev_index = 0;
+	else if (strstr(w->name, "PA1"))
+		dev_index = 1;
+	else
+		return -EINVAL;
+
+	aw87xxx = aw87xxx_get_dev_by_index(dev_index);
+	if (!aw87xxx) {
+		pr_err("%s: Failed to get aw87xxx device for index %d\n",
+			__func__, dev_index);
+		return -EINVAL;
+	}
+
+	pr_debug("%s: event %d for PA%d\n", __func__, event, dev_index);
+
+	switch (event) {
+	case SND_SOC_DAPM_PRE_PMU:
+		/* Power on the amplifier with appropriate profile */
+		ret = aw87xxx_update_profile(aw87xxx, "speaker");
+		if (ret < 0) {
+			pr_err("%s: Failed to power on PA%d, ret=%d\n",
+				__func__, dev_index, ret);
+			return ret;
+		}
+		break;
+	case SND_SOC_DAPM_POST_PMD:
+		/* Power off the amplifier */
+		ret = aw87xxx_update_profile(aw87xxx, "off");
+		if (ret < 0) {
+			pr_err("%s: Failed to power off PA%d, ret=%d\n",
+				__func__, dev_index, ret);
+			return ret;
+		}
+		break;
+	default:
+		pr_err("%s: invalid DAPM event %d\n", __func__, event);
+		return -EINVAL;
+	}
+
+	return 0;
+}
+#endif
+
 static const struct snd_soc_dapm_widget msm_int_dapm_widgets[] = {
 	SND_SOC_DAPM_MIC("Analog Mic1", NULL),
 	SND_SOC_DAPM_MIC("Analog Mic2", NULL),
@@ -266,6 +322,10 @@ static const struct snd_soc_dapm_widget msm_int_dapm_widgets[] = {
 	SND_SOC_DAPM_MIC("Digital Mic1", msm_dmic_event),
 	SND_SOC_DAPM_MIC("Digital Mic2", msm_dmic_event),
 	SND_SOC_DAPM_MIC("Digital Mic3", msm_dmic_event),
+#ifdef CONFIG_SND_SOC_AW87XXX
+	SND_SOC_DAPM_SPK("AW87XXX PA0", msm_aw87xxx_event),
+	SND_SOC_DAPM_SPK("AW87XXX PA1", msm_aw87xxx_event),
+#endif
 };
 
 static int msm_wcn_init(struct snd_soc_pcm_runtime *rtd)
@@ -1202,6 +1262,11 @@ static int msm_rx_tx_codec_init(struct snd_soc_pcm_runtime *rtd)
 	snd_soc_dapm_ignore_suspend(dapm, "Digital Mic1");
 	snd_soc_dapm_ignore_suspend(dapm, "Digital Mic2");
 	snd_soc_dapm_ignore_suspend(dapm, "Digital Mic3");
+
+#ifdef CONFIG_SND_SOC_AW87XXX
+	snd_soc_dapm_ignore_suspend(dapm, "AW87XXX PA0");
+	snd_soc_dapm_ignore_suspend(dapm, "AW87XXX PA1");
+#endif
 
 	snd_soc_dapm_ignore_suspend(dapm, "Analog Mic1");
 	snd_soc_dapm_ignore_suspend(dapm, "Analog Mic2");
